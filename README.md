@@ -1,0 +1,1 @@
+# manylogs-android-sdk
