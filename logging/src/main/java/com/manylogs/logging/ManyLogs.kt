@@ -5,7 +5,6 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.google.gson.Gson
-import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import io.reactivex.rxjava3.subjects.PublishSubject
 import okhttp3.*
@@ -23,6 +22,7 @@ val PATH_LOGS = "$HOST/logs"
 val PATH_CONFIG = "$HOST/config"
 val PATH_REPLAY = "$HOST/replay"
 
+@Deprecated("")
 class ManyLogs(context: Context) {
 
     private val publisher: PublishSubject<LogDataModel> = PublishSubject.create()
@@ -79,7 +79,7 @@ class ManyLogs(context: Context) {
     }
 
     fun log(response: Response): Response {
-        publisher.onNext(response.toLogData())
+//        publisher.onNext(response.toLogData())
         return response
     }
 
@@ -130,26 +130,5 @@ class ManyLogs(context: Context) {
     companion object {
         lateinit var client: OkHttpClient
     }
-}
-
-fun Response.toLogData(): LogDataModel {
-    val req = LogDataModel.Request(
-        url = request().url().toString(),
-        method = request().method(),
-        body = JsonObject() // todo - peak body
-    )
-
-    val resBody = peekBody(Long.MAX_VALUE).string()
-
-    val res = LogDataModel.Response(
-        headers = headers().toString(),
-        code = code().toString(),
-        body = gson.fromJson(resBody, JsonElement::class.java)
-    )
-
-    return LogDataModel(
-            request = req,
-            response = res
-    )
 }
 

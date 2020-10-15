@@ -3,21 +3,20 @@ package com.manylogs.logging
 import android.content.Context
 import androidx.work.Worker
 import androidx.work.WorkerParameters
-import okhttp3.Request
-import okhttp3.RequestBody
 import timber.log.Timber
 import java.io.File
 
 class LogsWorker(context: Context, params: WorkerParameters) : Worker(context, params) {
 
     private var file: File? = null
-    private val client = ManyLogs.client
+
+    private var repository: ApiRepository = ApiRepository.createFromPreferences(context)
 
     init {
-        val filename = inputData.getString("filename")
-        file = context.getFileStreamPath(filename)
-
-        Timber.d("Worker: filename: $filename")
+        inputData.getString("filename")?.let {
+            file = context.getFileStreamPath(it)
+            Timber.d("Worker: filename: $it")
+        }
     }
 
     override fun doWork(): Result {
@@ -26,7 +25,7 @@ class LogsWorker(context: Context, params: WorkerParameters) : Worker(context, p
                 "$some$text"
             }.trim()
             val logs: List<LogDataModel> = export.fromJsonList()
-            uploadLogs(LogsBody(logs))
+            repository.postLogs(LogsBody(logs))
         }
 
         file?.let {
@@ -34,18 +33,5 @@ class LogsWorker(context: Context, params: WorkerParameters) : Worker(context, p
         }
 
         return Result.failure()
-    }
-
-    private fun uploadLogs(body: LogsBody) {
-
-        val reqBody = RequestBody
-                .create(MEDIA_TYPE_JSON, body.json())
-
-        val request = Request.Builder()
-                .url(PATH_LOGS)
-                .post(reqBody)
-                .build()
-
-        client.newCall(request).execute()
     }
 }
