@@ -13,6 +13,6 @@ allprojects {
 }
   
 dependencies {
-    implementation 'com.github.manylogs:manylogs-android-sdk:0.0.1'
+    implementation 'com.github.manylogs:manylogs-android-sdk:0.0.2'
 }
 ```
