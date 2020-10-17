@@ -7,21 +7,21 @@ data class LogDataModel(
     val response: Response
 ) {
     data class Request(
-            val headers: List<String>,
-            val url: String,
-            val method: String,
-            val body: JsonElement?
+        val headers: List<String>,
+        val url: String,
+        val method: String,
+        val body: JsonElement?
     )
 
     data class Response(
-            val headers: List<String>,
-            val code: String,
-            val body: JsonElement?
+        val headers: List<String>,
+        val code: String,
+        val body: JsonElement?
     )
 }
 
 data class LogsBody(
-        val data: List<LogDataModel>
+    val data: List<LogDataModel>
 )
 
 data class ConfigResponse(val replay: List<String>)
