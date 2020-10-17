@@ -26,17 +26,13 @@ inline fun <reified T : Any> String.fromJsonList(): T = genericGson.fromJson(thi
 
 
 ///////////////////////////////////////////////////////////////////////////
-// Preferences
-///////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////
 // Extensions
 ///////////////////////////////////////////////////////////////////////////
 
 /**
  * Generic, non user specific, app settings.
  */
-fun getLogzyPreferences(context: Context): SharedPreferences = context.getSharedPreferences("logzy_app_settings", Context.MODE_PRIVATE)
+internal fun getPreferences(context: Context): SharedPreferences = context.getSharedPreferences("logzy_app_settings", Context.MODE_PRIVATE)
 
 inline fun <reified T> SharedPreferences.get(key: String, defaultValue: T): T {
     when (T::class) {

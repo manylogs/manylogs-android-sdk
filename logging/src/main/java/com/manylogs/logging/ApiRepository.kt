@@ -3,7 +3,6 @@ package com.manylogs.logging
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonObject
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -80,7 +79,7 @@ internal class ApiRepository(
 
     companion object {
         fun createFromPreferences(context: Context): ApiRepository {
-            val preferences = getLogzyPreferences(context)
+            val preferences = getPreferences(context)
 
             val host: String = preferences.get("host", "")
             val key: String = preferences.get("api_key", "")

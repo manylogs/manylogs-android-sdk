@@ -15,7 +15,7 @@ class ManyLogsClient(
 ) {
 
     private val publisher: PublishSubject<LogDataModel> = PublishSubject.create()
-    private val preferences = getLogzyPreferences(context)
+    private val preferences = getPreferences(context)
     private var repository: ApiRepository
 
     private val PATH_REPLAY = "$host/replay"
