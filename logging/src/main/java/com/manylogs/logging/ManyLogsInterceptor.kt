@@ -23,6 +23,9 @@ class ManyLogsInterceptor(private val client: ManyLogsClient) : Interceptor {
     }
 
     private fun parse(request: Request): Request {
+        val method = request.method()
+        val url = request.url().toString()
+        val hash = Encodings.encodeRequest(method, url)
         return request
     }
 
@@ -80,7 +83,6 @@ fun Headers.bodyHasUnknownEncoding(): Boolean {
 }
 
 internal fun Headers.toJsonObject(): JsonObject {
-    val lst = arrayListOf<String>()
     val o = JsonObject()
     if (size() > 0) {
         for (i in 0 until size()) {
