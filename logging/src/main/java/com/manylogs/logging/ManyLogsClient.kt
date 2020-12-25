@@ -10,15 +10,13 @@ import java.util.concurrent.TimeUnit
 
 class ManyLogsClient(
     context: Context,
-    host: String,
+    val host: String,
     apiKey: String
 ) {
 
     private val publisher: PublishSubject<LogDataModel> = PublishSubject.create()
     private val preferences = getPreferences(context)
     private var repository: ApiRepository
-
-    private val PATH_REPLAY = "$host/replay"
 
     init {
         preferences.put("host", host)
@@ -37,10 +35,10 @@ class ManyLogsClient(
         publisher
             .buffer(3, TimeUnit.SECONDS)
             .filter { it.size > 0 }
-            .doOnNext { it.removeAll { it.request.url == PATH_REPLAY } } // removes REPLAY calls
-            .doOnNext {  Timber.d("Requests count: ${it.size}") }
+            .doOnNext { it.removeAll { it.request.url.contains(host) } } // removes calls to our own server
+            .doOnNext { Timber.d("Requests count: ${it.size}") }
             .map {
-                val filename = "logzy_${System.currentTimeMillis()}"
+                val filename = "manylogs_${System.currentTimeMillis()}"
                 val content = it.json()
                 context.openFileOutput(filename, Context.MODE_PRIVATE).use {
                     it.write(content.toByteArray())

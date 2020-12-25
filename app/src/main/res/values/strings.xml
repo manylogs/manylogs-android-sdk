@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">manylogs sdk</string>
-    <string name="api_key">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Im1hbnlsb2dzIiwiaWQiOjEsImV4cCI6MTYzNDUwOTAyMn0.5tJcm2YhlhK4gOxrZ7hCyGa9IvNwEHiLJcqi71DFqHbPfECv7lDB0gYFD_b3ymyAp8DBuXBwzhl6x9xk5lak0g</string>
+    <string name="api_key">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJBdXRoZW50aWNhdGlvbiIsImlzcyI6Im1hbnlsb2dzLmNvbSIsImlkIjo4LCJleHAiOjE2NDAzOTE0Njh9.nPPUkC6LMqjpVu27S8HKlqYECI3smaEBG4e6_3FsURDi3bNfLgopfWXoHEjPy3XQvcXUkjHjBQzUC_JNPeDM9Q</string>
     <string name="host">http://192.168.1.85:8080/api/v1/</string>
 </resources>

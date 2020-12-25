@@ -29,7 +29,6 @@ class MainActivity : AppCompatActivity() {
 
         initClients()
 
-
         findViewById<Button>(R.id.btnPosts)?.setOnClickListener { getPosts() }
         findViewById<Button>(R.id.btnUsers)?.setOnClickListener { getUsers() }
         findViewById<Button>(R.id.btnSendPost)?.setOnClickListener { sendPost() }

@@ -58,13 +58,13 @@ internal class ApiRepository(
         val logging = HttpLoggingInterceptor()
         val authenticator = Authenticator(apiKey)
         logging.level = HttpLoggingInterceptor.Level.BODY
-        val builder = OkHttpClient.Builder()
-        builder.addInterceptor(authenticator)
-        builder.addInterceptor(logging)
-        builder.connectTimeout(30, TimeUnit.SECONDS)
-        builder.readTimeout(30, TimeUnit.SECONDS)
-        builder.writeTimeout(30, TimeUnit.SECONDS)
-        return builder.build()
+        return OkHttpClient.Builder().apply {
+            addInterceptor(authenticator)
+            addInterceptor(logging)
+            connectTimeout(30, TimeUnit.SECONDS)
+            readTimeout(30, TimeUnit.SECONDS)
+            writeTimeout(30, TimeUnit.SECONDS)
+        }.build()
     }
 
     private fun createApiService(client: OkHttpClient = createClient(), host: String): ApiService {
@@ -109,7 +109,7 @@ internal class Authenticator(private val token: String): Interceptor {
 internal interface ApiService {
 
     @Headers("Accept: application/json; charset=utf-8")
-    @POST("logs")
+    @POST("data-stream")
     fun sendLogs(@Body body: LogsBody): Call<Unit>
 
     @Headers("Accept: application/json; charset=utf-8")

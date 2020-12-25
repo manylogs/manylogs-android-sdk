@@ -3,6 +3,7 @@ package com.manylogs.logging
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.google.gson.JsonPrimitive
 import okhttp3.*
 import okio.Buffer
 import okio.BufferedSource
@@ -33,7 +34,7 @@ class ManyLogsInterceptor(private val client: ManyLogsClient) : Interceptor {
     private fun Response.toLogData(): LogDataModel {
 
         val req: LogDataModel.Request = request().run {
-            val reqHeaders = headers().toList()
+            val reqHeaders = headers().toJsonObject()
             val reqUrl = url().toString()
             val reqMethod = method()
             val reqBodyStr = body()?.copyBody()
@@ -50,7 +51,7 @@ class ManyLogsInterceptor(private val client: ManyLogsClient) : Interceptor {
             )
         }
 
-        val resHeaders = headers().toList()
+        val resHeaders = headers().toJsonObject()
         val resCode = code().toString()
         val resBodyStr = body()?.copyBody()
         val resBody = if (resBodyStr != null) gson.fromJson(
@@ -78,16 +79,17 @@ fun Headers.bodyHasUnknownEncoding(): Boolean {
             && !contentEncoding.equals("gzip", ignoreCase = true))
 }
 
-internal fun Headers.toList(): List<String> {
+internal fun Headers.toJsonObject(): JsonObject {
     val lst = arrayListOf<String>()
+    val o = JsonObject()
     if (size() > 0) {
         for (i in 0 until size()) {
             val name = name(i)
-            val values = values(name)
-            lst.add("$name: ${values.joinToString(separator = "; ")}")
+            val values = values(name).joinToString(separator = "; ")
+            o.add(name, JsonPrimitive(values))
         }
     }
-    return lst
+    return o
 }
 
 internal fun RequestBody.copyBody(): String? {
