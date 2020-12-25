@@ -7,22 +7,21 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import java.util.zip.CRC32
 
-//log data
-fun LogDataModel.Request.hash(): String {
-    val checksum = CRC32()
-    val requestBytes = toString().toByteArray()
-    checksum.update(requestBytes, 0, requestBytes.size)
-
-    return checksum.value.toString()
+inline fun String.crc32(): Long {
+    val b = toByteArray()
+    return CRC32().apply { update(b, 0, b.size) }.value
 }
 
 
 // Gson
-val genericGson = GsonBuilder().setPrettyPrinting().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()
+val genericGson = GsonBuilder().setPrettyPrinting()
+    .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()
+
 inline fun <reified T : Any> T.json(): String = genericGson.toJson(this, T::class.java)
 
 inline fun <reified T : Any> String.fromJson(): T = genericGson.fromJson(this, T::class.java)
-inline fun <reified T : Any> String.fromJsonList(): T = genericGson.fromJson(this, object : TypeToken<T>() {}.type)
+inline fun <reified T : Any> String.fromJsonList(): T =
+    genericGson.fromJson(this, object : TypeToken<T>() {}.type)
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -32,7 +31,8 @@ inline fun <reified T : Any> String.fromJsonList(): T = genericGson.fromJson(thi
 /**
  * Generic, non user specific, app settings.
  */
-internal fun getPreferences(context: Context): SharedPreferences = context.getSharedPreferences("manylogs_app_settings", Context.MODE_PRIVATE)
+internal fun getPreferences(context: Context): SharedPreferences =
+    context.getSharedPreferences("manylogs_app_settings", Context.MODE_PRIVATE)
 
 inline fun <reified T> SharedPreferences.get(key: String, defaultValue: T): T {
     when (T::class) {
