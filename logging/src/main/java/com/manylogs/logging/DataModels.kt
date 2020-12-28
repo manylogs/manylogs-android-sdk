@@ -2,6 +2,7 @@ package com.manylogs.logging
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
+import com.google.gson.annotations.SerializedName
 
 data class LogDataModel(
     val request: Request,
@@ -25,6 +26,18 @@ data class LogsBody(
     val data: List<LogDataModel>
 )
 
-data class ConfigResponse(val replay: List<String>)
+data class ConfigResponse(
+    @SerializedName("data_settings")
+    val dataSettings: DataSettingsModel,
+    @SerializedName("replay_ids")
+    val replayIds: List<Long>
+)
 
-data class ReplayBodyModel(val requestHash: String)
+data class DataSettingsModel(
+    @SerializedName("is_replay_enabled")
+    val isReplayEnabled: Boolean = true,
+    @SerializedName("is_data_stream_enabled")
+    val isDataStreamEnabled: Boolean = true
+)
+
+data class ReplayBodyModel(val requestHash: Long)

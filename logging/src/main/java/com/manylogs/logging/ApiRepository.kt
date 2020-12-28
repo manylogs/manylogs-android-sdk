@@ -3,8 +3,7 @@ package com.manylogs.logging
 import android.content.Context
 import android.content.SharedPreferences
 import com.google.gson.GsonBuilder
-import okhttp3.Interceptor
-import okhttp3.OkHttpClient
+import okhttp3.*
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
 import retrofit2.Callback
@@ -15,8 +14,10 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Headers
 import retrofit2.http.POST
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
+internal val MEDIA_TYPE_JSON = MediaType.parse("application/json")
 
 internal class ApiRepository(
     val preferences: SharedPreferences,
@@ -24,13 +25,30 @@ internal class ApiRepository(
     val apiKey: String
 ) {
 
+    private var isConfigSynced = false;
+
+    private var hashIds = emptySet<Long>()
+    private var settings: DataSettingsModel = DataSettingsModel()
+
+    private val pathReplay = "$host/data-flow/replay"
+
     private val service: ApiService = createApiService(host = host)
 
     fun postLogs(body: LogsBody) {
         service.sendLogs(body).execute()
     }
 
-    private fun syncConfig() {
+    fun createReplayRequest(requestHash: Long): Request {
+        val json = ReplayBodyModel(requestHash = requestHash).json()
+        val body = RequestBody.create(MEDIA_TYPE_JSON, json)
+        return Request.Builder()
+            .addHeader("Authorization", "Bearer $apiKey")
+            .post(body)
+            .url(pathReplay)
+            .build()
+    }
+
+    fun syncConfig() {
         service.getConfig().enqueue(object : Callback<ConfigResponse> {
 
             override fun onFailure(call: Call<ConfigResponse>, t: Throwable) {
@@ -42,12 +60,34 @@ internal class ApiRepository(
                 response: Response<ConfigResponse>
             ) {
                 if (response.isSuccessful) {
+                    Timber.d("Config synced successfully...")
+                    isConfigSynced = true;
                     response.body()?.let {
-                        // todo - save
+                        hashIds = it.replayIds.toSet()
+                        settings = it.dataSettings
                     }
                 }
             }
         })
+    }
+
+    ///////////////////////////////////////////////////////////////////////////
+    // Getters
+    ///////////////////////////////////////////////////////////////////////////
+
+    fun getReplayHashIds(): Set<Long> {
+        if (!isConfigSynced) Timber.d("Trying to access config data (hash ids) before it has synced.")
+        return hashIds
+    }
+
+    fun isDataReplayEnabled(): Boolean {
+        if (!isConfigSynced) Timber.d("Trying to access config data (replay status) before it has synced.")
+        return settings.isReplayEnabled;
+    }
+
+    fun isDataSyncEnabled(): Boolean {
+        if (!isConfigSynced) Timber.d("Trying to access config data (sync status) before it has synced.")
+        return settings.isDataStreamEnabled;
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -68,7 +108,9 @@ internal class ApiRepository(
     }
 
     private fun createApiService(client: OkHttpClient = createClient(), host: String): ApiService {
-        val gson = GsonBuilder().create()
+        val gson = GsonBuilder()
+            .setPrettyPrinting()
+            .create()
         val retrofit = Retrofit.Builder()
             .baseUrl(host)
             .addConverterFactory(GsonConverterFactory.create(gson))
@@ -91,7 +133,7 @@ internal class ApiRepository(
     }
 }
 
-internal class Authenticator(private val token: String): Interceptor {
+internal class Authenticator(private val token: String) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): okhttp3.Response {
         return if (token.isEmpty()) {
@@ -113,6 +155,6 @@ internal interface ApiService {
     fun sendLogs(@Body body: LogsBody): Call<Unit>
 
     @Headers("Accept: application/json; charset=utf-8")
-    @GET("config")
+    @GET("data-flow/config")
     fun getConfig(): Call<ConfigResponse>
 }

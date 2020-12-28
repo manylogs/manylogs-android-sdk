@@ -5,6 +5,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import io.reactivex.rxjava3.subjects.PublishSubject
+import okhttp3.Request
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
@@ -19,13 +20,23 @@ class ManyLogsClient(
     private var repository: ApiRepository
 
     init {
+
+        if (BuildConfig.DEBUG) Timber.plant(Timber.DebugTree())
+
         preferences.put("host", host)
         preferences.put("api_key", apiKey)
 
         repository = ApiRepository.createFromPreferences(context)
+        repository.syncConfig()
 
         initPublishers(context)
     }
+
+    fun hashIds() = repository.getReplayHashIds()
+    fun isDataReplyEnabled() = repository.isDataReplayEnabled()
+    fun isDataSyncEnabled() = repository.isDataSyncEnabled()
+
+    fun createReplayRequest(requestHash: Long) = repository.createReplayRequest(requestHash)
 
     fun queue(data: LogDataModel) {
         publisher.onNext(data)
@@ -34,8 +45,8 @@ class ManyLogsClient(
     private fun initPublishers(context: Context) {
         publisher
             .buffer(3, TimeUnit.SECONDS)
-            .filter { it.size > 0 }
             .doOnNext { it.removeAll { it.request.url.contains(host) } } // removes calls to our own server
+            .filter { it.size > 0 }
             .doOnNext { Timber.d("Requests count: ${it.size}") }
             .map {
                 val filename = "manylogs_${System.currentTimeMillis()}"

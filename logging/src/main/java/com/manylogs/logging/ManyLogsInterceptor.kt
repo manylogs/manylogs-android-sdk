@@ -7,6 +7,7 @@ import com.google.gson.JsonPrimitive
 import okhttp3.*
 import okio.Buffer
 import okio.BufferedSource
+import timber.log.Timber
 import java.io.EOFException
 import java.nio.charset.Charset
 
@@ -16,6 +17,7 @@ class ManyLogsInterceptor(private val client: ManyLogsClient) : Interceptor {
 
     private val gson = Gson()
 
+    @Suppress("UnnecessaryVariable")
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = parse(chain.request())
         val response = log(chain.proceed(request))
@@ -26,11 +28,20 @@ class ManyLogsInterceptor(private val client: ManyLogsClient) : Interceptor {
         val method = request.method()
         val url = request.url().toString()
         val hash = Encodings.encodeRequest(method, url)
+
+        val isReplay = client.hashIds().contains(hash)
+        val isReplayEnabled = client.isDataReplyEnabled()
+
+        if (isReplayEnabled && isReplay) {
+            Timber.d("Replaying request $method $url")
+            return client.createReplayRequest(hash)
+        }
+
         return request
     }
 
     private fun log(response: Response): Response {
-        client.queue(response.toLogData())
+        if (client.isDataSyncEnabled()) client.queue(response.toLogData())
         return response
     }
 
