@@ -34,6 +34,10 @@ internal class ApiRepository(
 
     private val service: ApiService = createApiService(host = host)
 
+    init {
+        syncConfig() // note - this is also called with every Worker init (data sync)
+    }
+
     fun postLogs(body: LogsBody) {
         service.sendLogs(body).execute()
     }
@@ -49,6 +53,7 @@ internal class ApiRepository(
     }
 
     fun syncConfig() {
+        Timber.d("Syncing config...")
         service.getConfig().enqueue(object : Callback<ConfigResponse> {
 
             override fun onFailure(call: Call<ConfigResponse>, t: Throwable) {
@@ -60,7 +65,7 @@ internal class ApiRepository(
                 response: Response<ConfigResponse>
             ) {
                 if (response.isSuccessful) {
-                    Timber.d("Config synced successfully...")
+                    Timber.d("Config synced successfully!")
                     isConfigSynced = true;
                     response.body()?.let {
                         hashIds = it.replayIds.toSet()

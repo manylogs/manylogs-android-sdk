@@ -27,7 +27,6 @@ class ManyLogsClient(
         preferences.put("api_key", apiKey)
 
         repository = ApiRepository.createFromPreferences(context)
-        repository.syncConfig()
 
         initPublishers(context)
     }
