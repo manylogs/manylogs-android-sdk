@@ -160,6 +160,6 @@ internal interface ApiService {
     fun sendLogs(@Body body: LogsBody): Call<Unit>
 
     @Headers("Accept: application/json; charset=utf-8")
-    @GET("data-flow/config")
+    @GET("user/config")
     fun getConfig(): Call<ConfigResponse>
 }
